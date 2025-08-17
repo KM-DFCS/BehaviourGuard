@@ -1,0 +1,622 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Job #{{ job.id }} - BehaviorGuard {% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2">
+                <i data-feather="activity" class="me-2"></i>
+                Analysis Job #{{ job.id }}
+            </h1>
+            <div class="btn-group">
+                {% if job.report_path %}
+                    <a href="{{ url_for('analysis.download_report', job_id=job.id) }}" class="btn btn-success">
+                        <i data-feather="download" class="me-2"></i>
+                        Download Report
+                    </a>
+                {% endif %}
+                <button type="button" class="btn btn-outline-danger" onclick="deleteJob({{ job.id }})">
+                    <i data-feather="trash-2" class="me-2"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Job Overview -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="info" class="me-2"></i>
+                    File Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-borderless">
+                        <tbody>
+                            <tr>
+                                <td width="150"><strong>Filename:</strong></td>
+                                <td>{{ job.filename }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>File Hash:</strong></td>
+                                <td><code class="small">{{ job.file_hash }}</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>File Size:</strong></td>
+                                <td>{{ "{:,}".format(job.file_size) }} bytes</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Created:</strong></td>
+                                <td>{{ job.created_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Last Updated:</strong></td>
+                                <td>{{ job.updated_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="clock" class="me-2"></i>
+                    Status
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <span class="badge bg-{{ 'success' if job.status.value == 'completed' else 'warning' if job.status.value in ['pending', 'uploading', 'analyzing'] else 'danger' if job.status.value == 'failed' else 'info' }} fs-6" id="job-status">
+                        {{ job.status.value.replace('_', ' ').title() }}
+                    </span>
+                </div>
+                
+                {% if job.status.value in ['pending', 'uploading', 'sandbox_submitted', 'analyzing', 'generating_report'] %}
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Analyzing...</span>
+                    </div>
+                    <p class="text-muted small">Analysis in progress...</p>
+                {% elif job.status.value == 'completed' %}
+                    <i data-feather="check-circle" class="text-success mb-3" width="48" height="48"></i>
+                    <p class="text-success">Analysis completed successfully</p>
+                {% elif job.status.value == 'failed' %}
+                    <i data-feather="x-circle" class="text-danger mb-3" width="48" height="48"></i>
+                    <p class="text-danger">Analysis failed</p>
+                    {% if job.error_message %}
+                        <small class="text-muted">{{ job.error_message }}</small>
+                    {% endif %}
+                {% endif %}
+                
+                {% if job.hybrid_job_id %}
+                    <hr>
+                    <div class="small text-muted">
+                        <strong>Hybrid Analysis ID:</strong><br>
+                        <code>{{ job.hybrid_job_id }}</code>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analysis Results -->
+{% if job.status.value == 'completed' %}
+    <!-- Static Analysis Results -->
+    {% if sandbox_report %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="search" class="me-2"></i>
+                    Static Analysis Results
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if sandbox_report.get('threat_assessment') %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Threat Assessment</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <tbody>
+                                        <tr>
+                                            <td>Verdict:</td>
+                                            <td>
+                                                <span class="badge bg-{{ 'danger' if sandbox_report.threat_assessment.get('verdict') == 'Malicious' else 'warning' if sandbox_report.threat_assessment.get('verdict') == 'Suspicious' else 'success' }}">
+                                                    {{ sandbox_report.threat_assessment.get('verdict', 'Unknown') }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Threat Level:</td>
+                                            <td>{{ sandbox_report.threat_assessment.get('threat_level', 'Unknown') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Threat Score:</td>
+                                            <td>{{ sandbox_report.threat_assessment.get('threat_score', 0) }}/100</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Confidence:</td>
+                                            <td>{{ sandbox_report.threat_assessment.get('analysis_confidence', 'Unknown') }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6>Threat Indicators</h6>
+                            {% if sandbox_report.threat_assessment.get('threat_indicators') %}
+                                <ul class="list-unstyled small">
+                                    {% for indicator in sandbox_report.threat_assessment.threat_indicators %}
+                                        <li><i data-feather="alert-triangle" class="text-warning me-2" width="14" height="14"></i>{{ indicator }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted">No specific threat indicators detected.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if sandbox_report.get('file_info') %}
+                    <hr>
+                    <h6>File Information</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>File Type:</strong> {{ sandbox_report.file_info.get('file_type', 'Unknown') }}</p>
+                            <p><strong>MD5:</strong> <code class="small">{{ sandbox_report.file_info.get('md5_hash', 'N/A') }}</code></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>SHA1:</strong> <code class="small">{{ sandbox_report.file_info.get('sha1_hash', 'N/A') }}</code></p>
+                            <p><strong>SHA256:</strong> <code class="small">{{ sandbox_report.file_info.get('sha256_hash', 'N/A') }}</code></p>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if sandbox_report.get('pe_analysis') and sandbox_report.pe_analysis.get('is_valid_pe') %}
+                    <hr>
+                    <h6>PE File Analysis</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Architecture:</strong> {{ '64-bit' if sandbox_report.pe_analysis.get('is_64bit') else '32-bit' }}</p>
+                            <p><strong>Sections:</strong> {{ sandbox_report.pe_analysis.get('number_of_sections', 0) }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if sandbox_report.pe_analysis.get('suspicious_imports') %}
+                                <p><strong>Suspicious Imports:</strong></p>
+                                <ul class="small">
+                                    {% for imp in sandbox_report.pe_analysis.suspicious_imports[:5] %}
+                                        <li><code>{{ imp }}</code></li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if sandbox_report.get('string_analysis') %}
+                    <hr>
+                    <h6>String Analysis</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Total Strings:</strong> {{ sandbox_report.string_analysis.get('total_strings', 0) }}</p>
+                            {% if sandbox_report.string_analysis.get('suspicious_strings') %}
+                                <p><strong>Suspicious Strings:</strong> {{ sandbox_report.string_analysis.suspicious_strings|length }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {% if sandbox_report.string_analysis.get('urls') %}
+                                <p><strong>URLs Found:</strong> {{ sandbox_report.string_analysis.urls|length }}</p>
+                            {% endif %}
+                            {% if sandbox_report.string_analysis.get('ip_addresses') %}
+                                <p><strong>IP Addresses:</strong> {{ sandbox_report.string_analysis.ip_addresses|length }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if sandbox_report.get('entropy_analysis') %}
+                    <hr>
+                    <h6>Entropy Analysis</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Entropy:</strong> {{ sandbox_report.entropy_analysis.get('entropy', 0) }}</p>
+                            <p><strong>Normalized:</strong> {{ sandbox_report.entropy_analysis.get('normalized_entropy', 0) }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Encrypted/Packed:</strong> 
+                                <span class="badge bg-{{ 'warning' if sandbox_report.entropy_analysis.get('is_likely_encrypted') else 'success' }}">
+                                    {{ 'Yes' if sandbox_report.entropy_analysis.get('is_likely_encrypted') else 'No' }}
+                                </span>
+                            </p>
+                            <p class="small text-muted">{{ sandbox_report.entropy_analysis.get('entropy_interpretation', '') }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Network Analysis -->
+    {% if network_analysis %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="activity" class="me-2"></i>
+                    Network Capture Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if network_analysis.get('capture_summary') %}
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <div class="stat-card bg-primary text-white p-3 rounded">
+                                <h6>Total Packets</h6>
+                                <h4>{{ network_analysis.capture_summary.total_packets_captured }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card bg-success text-white p-3 rounded">
+                                <h6>Connections</h6>
+                                <h4>{{ network_analysis.capture_summary.unique_connections }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card bg-warning text-white p-3 rounded">
+                                <h6>Suspicious</h6>
+                                <h4>{{ network_analysis.capture_summary.suspicious_packets }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card bg-info text-white p-3 rounded">
+                                <h6>Duration</h6>
+                                <h4>{{ network_analysis.capture_summary.capture_duration }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if network_analysis.get('risk_assessment') %}
+                    <div class="alert alert-{{ 'danger' if network_analysis.risk_assessment.threat_level == 'High' else 'warning' if network_analysis.risk_assessment.threat_level == 'Medium' else 'success' }}">
+                        <strong>Network Risk Assessment:</strong> {{ network_analysis.risk_assessment.threat_level }} (Score: {{ network_analysis.risk_assessment.risk_score }}) - {{ network_analysis.risk_assessment.verdict }}
+                    </div>
+                {% endif %}
+
+                {% if network_analysis.get('protocol_distribution') %}
+                    <h6>Protocol Distribution:</h6>
+                    <div class="mb-3">
+                        {% for protocol, count in network_analysis.protocol_distribution.items() %}
+                            <span class="badge bg-secondary me-2">{{ protocol }}: {{ count }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if network_analysis.get('suspicious_traffic') %}
+                    <h6>Suspicious Traffic:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Source</th>
+                                    <th>Destination</th>
+                                    <th>Protocol</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for packet in network_analysis.suspicious_traffic[:10] %}
+                                <tr>
+                                    <td>{{ packet.src_ip }}:{{ packet.src_port }}</td>
+                                    <td>{{ packet.dst_ip }}:{{ packet.dst_port }}</td>
+                                    <td>{{ packet.protocol }}</td>
+                                    <td>{{ packet.timestamp }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+
+                {% if network_analysis.get('connection_details') %}
+                    <h6>Connection Details:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Connection</th>
+                                    <th>Protocol</th>
+                                    <th>Packets</th>
+                                    <th>First Seen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for conn in network_analysis.connection_details[:10] %}
+                                <tr>
+                                    <td>{{ conn.src_ip }}:{{ conn.src_port }} → {{ conn.dst_ip }}:{{ conn.dst_port }}</td>
+                                    <td>{{ conn.protocol }}</td>
+                                    <td>{{ conn.packet_count }}</td>
+                                    <td>{{ conn.first_seen }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Process Analysis -->
+    {% if process_analysis %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="cpu" class="me-2"></i>
+                    Process Monitoring Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if process_analysis.get('monitoring_summary') %}
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <div class="stat-card bg-primary text-white p-3 rounded">
+                                <h6>Total Processes</h6>
+                                <h4>{{ process_analysis.monitoring_summary.total_processes_monitored }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card bg-success text-white p-3 rounded">
+                                <h6>Unique Processes</h6>
+                                <h4>{{ process_analysis.monitoring_summary.unique_processes }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card bg-warning text-white p-3 rounded">
+                                <h6>Suspicious</h6>
+                                <h4>{{ process_analysis.monitoring_summary.suspicious_processes }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card bg-info text-white p-3 rounded">
+                                <h6>Duration</h6>
+                                <h4>{{ process_analysis.monitoring_summary.monitoring_duration }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if process_analysis.get('risk_assessment') %}
+                    <div class="alert alert-{{ 'danger' if process_analysis.risk_assessment.threat_level == 'High' else 'warning' if process_analysis.risk_assessment.threat_level == 'Medium' else 'success' }}">
+                        <strong>Process Risk Assessment:</strong> {{ process_analysis.risk_assessment.threat_level }} (Score: {{ process_analysis.risk_assessment.risk_score }}) - {{ process_analysis.risk_assessment.verdict }}
+                    </div>
+                {% endif %}
+
+                {% if process_analysis.get('suspicious_activities') %}
+                    <h6>Suspicious Activities:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>PID</th>
+                                    <th>Process Name</th>
+                                    <th>Command Line</th>
+                                    <th>Reason</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in process_analysis.suspicious_activities[:10] %}
+                                <tr>
+                                    <td>{{ activity.pid }}</td>
+                                    <td>{{ activity.name }}</td>
+                                    <td><code>{{ activity.cmdline[:50] }}...</code></td>
+                                    <td>{{ activity.suspicious_reason }}</td>
+                                    <td>{{ activity.timestamp }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+
+                {% if process_analysis.get('file_activities') %}
+                    <h6>File Activities:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>File Path</th>
+                                    <th>Action</th>
+                                    <th>Size</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in process_analysis.file_activities[:10] %}
+                                <tr>
+                                    <td><code>{{ activity.file_path }}</code></td>
+                                    <td>{{ activity.action }}</td>
+                                    <td>{{ activity.size }}</td>
+                                    <td>{{ activity.timestamp }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+
+                {% if process_analysis.get('network_connections') %}
+                    <h6>Network Connections:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Local Address</th>
+                                    <th>Remote Address</th>
+                                    <th>Status</th>
+                                    <th>PID</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for conn in process_analysis.network_connections[:10] %}
+                                <tr>
+                                    <td>{{ conn.local_address }}</td>
+                                    <td>{{ conn.remote_address }}</td>
+                                    <td>{{ conn.status }}</td>
+                                    <td>{{ conn.pid }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- IOCs -->
+    {% if iocs %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="target" class="me-2"></i>
+                    Indicators of Compromise (IOCs)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for ioc_type, ioc_list in iocs.items() %}
+                        {% if ioc_list %}
+                            <div class="col-md-6 mb-3">
+                                <h6>{{ ioc_type.replace('_', ' ').title() }} ({{ ioc_list|length }})</h6>
+                                <div class="small" style="max-height: 200px; overflow-y: auto;">
+                                    {% for ioc in ioc_list[:10] %}
+                                        <div class="border rounded p-2 mb-1 bg-dark">
+                                            <code class="text-warning">{{ ioc }}</code>
+                                        </div>
+                                    {% endfor %}
+                                    {% if ioc_list|length > 10 %}
+                                        <div class="text-muted small">... and {{ ioc_list|length - 10 }} more</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- YARA Matches -->
+    {% if yara_matches %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="code" class="me-2"></i>
+                    YARA Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Summary</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Total Rules Generated:</strong> {{ yara_matches.get('total_rules', 0) }}</li>
+                            <li><strong>Rules Matched:</strong> {{ yara_matches.get('match_count', 0) }}</li>
+                        </ul>
+                    </div>
+                    
+                    {% if yara_matches.get('matched_rules') %}
+                        <div class="col-md-6">
+                            <h6>Matched Rules</h6>
+                            {% for match in yara_matches.matched_rules[:5] %}
+                                <div class="alert alert-warning py-2" style="color: white;">
+                                    <strong>{{ match.rule_name }}</strong><br>
+                                    <small>{{ match.meta.get('description', 'No description') }}</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% elif job.status.value in ['pending', 'uploading', 'sandbox_submitted', 'analyzing', 'generating_report'] %}
+    <!-- Analysis Progress -->
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;"></div>
+            <h5>Analysis in Progress</h5>
+            <p class="text-muted">Please wait while we analyze your file. This may take several minutes.</p>
+            <div class="progress mb-3" style="height: 20px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                     role="progressbar" style="width: {{ {'pending': 10, 'uploading': 20, 'sandbox_submitted': 40, 'analyzing': 70, 'generating_report': 90}.get(job.status.value, 0) }}%"></div>
+            </div>
+            <small class="text-muted">Current status: {{ job.status.value.replace('_', ' ').title() }}</small>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this analysis job? This action cannot be undone.</p>
+                <p><strong>File:</strong> {{ job.filename }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('analysis.delete_job', job_id=job.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger">Delete Job</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function deleteJob(jobId) {
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+
+// Auto-refresh status for active jobs
+{% if job.status.value in ['pending', 'uploading', 'sandbox_submitted', 'analyzing', 'generating_report'] %}
+setInterval(function() {
+    fetch('/analysis/api/job/{{ job.id }}/status')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('job-status').textContent = data.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            document.getElementById('job-status').className = 'badge fs-6 bg-' + 
+                (data.status === 'completed' ? 'success' : 
+                 data.status === 'failed' ? 'danger' : 
+                 ['pending', 'uploading', 'analyzing', 'generating_report'].includes(data.status) ? 'warning' : 'info');
+            
+            if (data.status === 'completed' || data.status === 'failed') {
+                // Reload page to show results
+                window.location.reload();
+            }
+        })
+        .catch(error => console.log('Error refreshing status:', error));
+}, 10000); // Check every 10 seconds
+{% endif %}
+</script>
+{% endblock %}

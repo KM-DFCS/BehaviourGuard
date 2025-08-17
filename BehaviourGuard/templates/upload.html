@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Upload File - BehaviorGuard {% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    <i data-feather="upload" class="me-2"></i>
+                    Upload File for Analysis
+                </h4>
+            </div>
+            <div class="card-body">
+                <!-- Security Warning -->
+                <div class="alert alert-warning" role="alert" style="color: white;">
+                    <div class="d-flex">
+                        <i data-feather="alert-triangle" class="me-2 flex-shrink-0"></i>
+                        <div>
+                            <strong>Security Notice:</strong> Only upload files you suspect may be malicious. 
+                            All analysis is performed in isolated environments for safety.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Form -->
+                <form method="POST" enctype="multipart/form-data" id="upload-form">
+                    <div class="mb-4">
+                        <label for="file" class="form-label">Select File</label>
+                        <div class="input-group">
+                            <input type="file" class="form-control" id="file" name="file" required 
+                                   accept=".exe,.dll,.sys,.scr,.com,.pif,.bat,.cmd,.zip,.rar,.7z,.tar,.gz,.jar,.msi,.deb,.rpm,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.js,.vbs,.ps1,.sh,.py,.pl,.rb">
+                            <button class="btn btn-primary" type="submit" id="upload-btn">
+                                <i data-feather="upload" class="me-2"></i>
+                                Upload & Analyze
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            Supported formats: Executables, Archives, Documents, Scripts (Max: 100MB)
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Upload Progress -->
+                <div id="upload-progress" class="d-none mb-3">
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted mt-2 d-block">Uploading file...</small>
+                </div>
+
+                <!-- File Information -->
+                <div id="file-info" class="d-none">
+                    <h6 class="mt-4">File Information</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr>
+                                    <td><strong>Filename:</strong></td>
+                                    <td id="info-filename">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Size:</strong></td>
+                                    <td id="info-size">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Type:</strong></td>
+                                    <td id="info-type">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Supported File Types -->
+                <div class="mt-4">
+                    <h6>Supported File Types</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled small">
+                                <li><i data-feather="file" class="me-2 text-danger" width="14" height="14"></i>Executables: .exe </li>
+                                <li><i data-feather="package" class="me-2 text-warning" width="14" height="14"></i>Archives: .zip, .rar, .7z, .tar, .gz</li>
+                                <li><i data-feather="file-text" class="me-2 text-info" width="14" height="14"></i>Documents: .pdf, .doc, .docx, .xls, .xlsx</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled small">
+                                <li><i data-feather="code" class="me-2 text-success" width="14" height="14"></i>Scripts: .js, .vbs, .ps1, .sh, .py</li>
+                                <li><i data-feather="settings" class="me-2 text-secondary" width="14" height="14"></i>Installers: .msi, .deb, .rpm, .jar</li>
+                                <li><i data-feather="terminal" class="me-2 text-primary" width="14" height="14"></i>Commands: .bat, .cmd</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Process Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="activity" class="me-2"></i>
+                    Analysis Process
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="border rounded p-3">
+                            <i data-feather="cloud" class="text-primary mb-2" width="24" height="24"></i>
+                            <h6 class="small">Sandbox Analysis</h6>
+                            <p class="text-muted small mb-0">Hybrid Analysis API execution</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="border rounded p-3">
+                            <i data-feather="wifi" class="text-info mb-2" width="24" height="24"></i>
+                            <h6 class="small">Network Capture</h6>
+                            <p class="text-muted small mb-0">Automated traffic analysis</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="border rounded p-3">
+                            <i data-feather="cpu" class="text-warning mb-2" width="24" height="24"></i>
+                            <h6 class="small">Process Monitor</h6>
+                            <p class="text-muted small mb-0">System activity tracking</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="border rounded p-3">
+                            <i data-feather="file-text" class="text-success mb-2" width="24" height="24"></i>
+                            <h6 class="small">Report Generation</h6>
+                            <p class="text-muted small mb-0">YARA rules & IOCs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.getElementById('upload-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const fileInput = document.getElementById('file');
+    const uploadBtn = document.getElementById('upload-btn');
+    const uploadProgress = document.getElementById('upload-progress');
+    const progressBar = uploadProgress.querySelector('.progress-bar');
+    
+    if (!fileInput.files.length) {
+        alert('Please select a file to upload.');
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    
+    // Validate file size (100MB max)
+    if (file.size > 100 * 1024 * 1024) {
+        alert('File is too large. Maximum size is 100MB.');
+        return;
+    }
+    
+    // Show file info
+    document.getElementById('info-filename').textContent = file.name;
+    document.getElementById('info-size').textContent = formatBytes(file.size);
+    document.getElementById('info-type').textContent = file.type || 'Unknown';
+    document.getElementById('file-info').classList.remove('d-none');
+    
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    // Show progress
+    uploadProgress.classList.remove('d-none');
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
+    
+    // Upload file
+    fetch('/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.redirected) {
+            window.location.href = response.url;
+        } else {
+            return response.text().then(text => {
+                // Handle non-redirect response
+                document.body.innerHTML = text;
+                feather.replace();
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Upload error:', error);
+        alert('Upload failed. Please try again.');
+        
+        // Reset UI
+        uploadProgress.classList.add('d-none');
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '<i data-feather="upload" class="me-2"></i>Upload & Analyze';
+        feather.replace();
+    });
+});
+
+function formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+// File input change handler
+document.getElementById('file').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        document.getElementById('info-filename').textContent = file.name;
+        document.getElementById('info-size').textContent = formatBytes(file.size);
+        document.getElementById('info-type').textContent = file.type || 'Unknown';
+        document.getElementById('file-info').classList.remove('d-none');
+    } else {
+        document.getElementById('file-info').classList.add('d-none');
+    }
+});
+</script>
+{% endblock %}

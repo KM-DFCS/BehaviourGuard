@@ -1,0 +1,382 @@
+{% extends "base.html" %}
+
+{% block title %}Guidelines - BehaviorGuard v2.1{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h2 mb-4">
+            <i data-feather="help-circle" class="me-2"></i>
+            Usage Guidelines & Safety Instructions
+        </h1>
+    </div>
+</div>
+
+<!-- Security Warning -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-danger border-danger">
+            <div class="d-flex">
+                <i data-feather="alert-triangle" class="me-3 flex-shrink-0" width="24" height="24"></i>
+                <div>
+                    <h5 class="alert-heading">⚠️ CRITICAL SECURITY WARNING</h5>
+                    <p class="mb-0">
+                        This system is designed for analyzing potentially malicious files. All analysis is performed 
+                        in isolated environments for safety. <strong>Never execute analyzed files on production systems 
+                        or outside of proper containment measures.</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- File Upload Guidelines -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i data-feather="upload" class="me-2"></i>
+                    File Upload Guidelines
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Supported File Types</h6>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <ul class="list-unstyled small">
+                            <li><i data-feather="file" class="me-2 text-danger" width="14"></i>Executables (.exe, .dll, .sys)</li>
+                            <li><i data-feather="package" class="me-2 text-warning" width="14"></i>Archives (.zip, .rar, .7z)</li>
+                            <li><i data-feather="file-text" class="me-2 text-info" width="14"></i>Documents (.pdf, .doc, .xls)</li>
+                        </ul>
+                    </div>
+                    <div class="col-6">
+                        <ul class="list-unstyled small">
+                            <li><i data-feather="code" class="me-2 text-success" width="14"></i>Scripts (.js, .vbs, .ps1, .py)</li>
+                            <li><i data-feather="settings" class="me-2 text-secondary" width="14"></i>Installers (.msi, .deb, .rpm)</li>
+                            <li><i data-feather="terminal" class="me-2 text-primary" width="14"></i>Batch files (.bat, .cmd)</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <h6>File Size Limits</h6>
+                <ul class="small">
+                    <li>Maximum file size: <strong>100 MB</strong></li>
+                    <li>Files larger than 100MB will be rejected</li>
+                    <li>Consider compressing large files if necessary</li>
+                </ul>
+                
+                <h6>Best Practices</h6>
+                <ul class="small">
+                    <li>Only upload files you suspect may be malicious</li>
+                    <li>Ensure you have proper authorization to analyze the file</li>
+                    <li>Do not upload personal or confidential documents</li>
+                    <li>Use descriptive filenames for easier identification</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i data-feather="activity" class="me-2"></i>
+                    Analysis Process
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Analysis Steps</h6>
+                <ol class="small">
+                    <li><strong>File Upload & Validation</strong>
+                        <ul class="small text-muted">
+                            <li>File type and size validation</li>
+                            <li>Hash calculation and duplicate detection</li>
+                        </ul>
+                    </li>
+                    <li><strong>Sandbox Analysis</strong>
+                        <ul class="small text-muted">
+                            <li>Submission to Hybrid Analysis API</li>
+                            <li>Dynamic behavior analysis</li>
+                            <li>MITRE ATT&CK technique mapping</li>
+                        </ul>
+                    </li>
+                    <li><strong>Network Monitoring</strong>
+                        <ul class="small text-muted">
+                            <li>Automated network traffic capture</li>
+                            <li>DNS query analysis</li>
+                            <li>HTTP/HTTPS communication tracking</li>
+                        </ul>
+                    </li>
+                    <li><strong>Process Monitoring</strong>
+                        <ul class="small text-muted">
+                            <li>Process creation and injection detection</li>
+                            <li>File system modifications</li>
+                            <li>Registry changes</li>
+                        </ul>
+                    </li>
+                    <li><strong>YARA Rule Generation</strong>
+                        <ul class="small text-muted">
+                            <li>Automatic rule creation</li>
+                            <li>Static and dynamic analysis</li>
+                            <li>IOC extraction</li>
+                        </ul>
+                    </li>
+                    <li><strong>Report Generation</strong>
+                        <ul class="small text-muted">
+                            <li>Comprehensive PDF report</li>
+                            <li>Executive summary</li>
+                            <li>Technical details and recommendations</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Configuration Requirements -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="card-title mb-0">
+                    <i data-feather="settings" class="me-2"></i>
+                    System Configuration Requirements
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Required Environment Variables</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Purpose</th>
+                                        <th>Required</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>HYBRID_ANALYSIS_API_KEY</code></td>
+                                        <td>Sandbox analysis</td>
+                                        <td><span class="badge bg-danger">Yes</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>REDIS_URL</code></td>
+                                        <td>Task queue</td>
+                                        <td><span class="badge bg-warning">Recommended</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>ANALYSIS_VM_IP</code></td>
+                                        <td>Network capture</td>
+                                        <td><span class="badge bg-secondary">Optional</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>WINDOWS_VM_IP</code></td>
+                                        <td>Process monitoring</td>
+                                        <td><span class="badge bg-secondary">Optional</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>Analysis VMs (Optional)</h6>
+                        <div class="alert alert-info small">
+                            <p class="mb-2"><strong>Network Analysis VM:</strong></p>
+                            <ul class="mb-3">
+                                <li>Linux-based system with tcpdump/tshark</li>
+                                <li>SSH access configured</li>
+                                <li>Network interface for monitoring</li>
+                            </ul>
+                            
+                            <p class="mb-2"><strong>Windows Analysis VM:</strong></p>
+                            <ul class="mb-0">
+                                <li>Windows system with Procmon installed</li>
+                                <li>PowerShell remoting enabled</li>
+                                <li>Isolated network environment</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="small text-muted">
+                            <p class="mb-0">
+                                <i data-feather="info" class="me-1" width="12"></i>
+                                If analysis VMs are not configured, the system will provide mock data for demonstration purposes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Safety Instructions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i data-feather="shield" class="me-2"></i>
+                    Safety Instructions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-danger">⛔ Never Do</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i data-feather="x" class="text-danger me-2" width="16"></i>
+                                Execute analyzed files on production systems
+                            </li>
+                            <li class="mb-2">
+                                <i data-feather="x" class="text-danger me-2" width="16"></i>
+                                Run malware outside of isolated environments
+                            </li>
+                            <li class="mb-2">
+                                <i data-feather="x" class="text-danger me-2" width="16"></i>
+                                Upload files without proper authorization
+                            </li>
+                            <li class="mb-2">
+                                <i data-feather="x" class="text-danger me-2" width="16"></i>
+                                Share analysis results with unauthorized personnel
+                            </li>
+                            <li class="mb-2">
+                                <i data-feather="x" class="text-danger me-2" width="16"></i>
+                                Use in environments with sensitive data
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="text-success">✅ Always Do</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i data-feather="check" class="text-success me-2" width="16"></i>
+                                Use isolated analysis environments only
+                            </li>
+                            <li class="mb-2">
+                                <i data-feather="check" class="text-success me-2" width="16"></i>
+                                Verify file sources before analysis
+                            </li>
+                            <li class="mb-2">
+                                <i data-feather="check" class="text-success me-2" width="16"></i>
+                                Follow your organization's security policies
+                            </li>
+                            <li class="mb-2">
+                                <i data-feather="check" class="text-success me-2" width="16"></i>
+                                Keep analysis reports confidential
+                            </li>
+                            <li class="mb-2">
+                                <i data-feather="check" class="text-success me-2" width="16"></i>
+                                Report suspicious files to security teams
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Troubleshooting -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="tool" class="me-2"></i>
+                    Troubleshooting
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Common Issues</h6>
+                        <div class="accordion" id="troubleshootingAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                        Analysis stuck in "Pending" status
+                                    </button>
+                                </h2>
+                                <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                    <div class="accordion-body small">
+                                        <ul>
+                                            <li>Check if Celery worker is running</li>
+                                            <li>Verify Redis connection</li>
+                                            <li>Check Hybrid Analysis API key validity</li>
+                                            <li>Review system logs for errors</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                        Network analysis shows mock data
+                                    </button>
+                                </h2>
+                                <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                    <div class="accordion-body small">
+                                        <ul>
+                                            <li>Configure ANALYSIS_VM_IP environment variable</li>
+                                            <li>Ensure SSH access to analysis VM</li>
+                                            <li>Check tcpdump/tshark installation</li>
+                                            <li>Verify network permissions</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                        Process monitoring unavailable
+                                    </button>
+                                </h2>
+                                <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                    <div class="accordion-body small">
+                                        <ul>
+                                            <li>Configure WINDOWS_VM_IP environment variable</li>
+                                            <li>Install Procmon on Windows analysis VM</li>
+                                            <li>Enable PowerShell remoting</li>
+                                            <li>Check Windows VM connectivity</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>Getting Help</h6>
+                        <div class="alert alert-light">
+                            <p class="small mb-2">If you encounter issues not covered here:</p>
+                            <ul class="small mb-2">
+                                <li>Check the application logs for detailed error messages</li>
+                                <li>Verify all environment variables are correctly set</li>
+                                <li>Ensure all required services (Redis, databases) are running</li>
+                                <li>Test API connectivity to external services</li>
+                            </ul>
+                            <p class="small mb-0">
+                                <strong>Log Locations:</strong><br>
+                                • Application logs: Check console output<br>
+                                • Celery worker logs: Check worker console<br>
+                                • System logs: /var/log/ (Linux) or Event Viewer (Windows)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

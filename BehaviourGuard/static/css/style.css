@@ -1,0 +1,472 @@
+/* Custom styles for BehaviorGuard */
+
+/* Root variables for consistent theming */
+:root {
+    --bs-primary: #0d6efd;
+    --bs-success: #198754;
+    --bs-danger: #dc3545;
+    --bs-warning: #ffc107;
+    --bs-info: #0dcaf0;
+    --bs-secondary: #6c757d;
+    --cyber-blue: #00d4ff;
+    --cyber-green: #00ff88;
+    --cyber-orange: #ff6b35;
+    --cyber-purple: #8b5cf6;
+}
+
+/* Body and layout */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bs-dark);
+    color: var(--bs-light);
+}
+
+/* Navigation enhancements */
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.navbar .nav-link {
+    transition: color 0.3s ease;
+}
+
+.navbar .nav-link:hover {
+    color: var(--cyber-blue) !important;
+}
+
+/* Card enhancements */
+.card {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+/* Copyright (c) 2025 Your Name. All rights reserved.*/
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Status badges */
+.badge {
+    font-size: 0.75em;
+    font-weight: 500;
+}
+
+/* Button enhancements */
+.btn {
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-group .btn {
+    transform: none;
+}
+
+.btn-group .btn:hover {
+    transform: none;
+    z-index: 1;
+}
+
+/* Form enhancements */
+.form-control, .form-select {
+    background-color: var(--bs-gray-800);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--bs-light);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--bs-gray-800);
+    border-color: var(--cyber-blue);
+    box-shadow: 0 0 0 0.2rem rgba(0, 212, 255, 0.25);
+    color: var(--bs-light);
+}
+
+.form-control::placeholder {
+    color: var(--bs-gray-400);
+}
+
+/* File upload area */
+.file-upload-area {
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 0.5rem;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.file-upload-area:hover {
+    border-color: var(--cyber-blue);
+    background-color: rgba(0, 212, 255, 0.05);
+}
+
+.file-upload-area.dragover {
+    border-color: var(--cyber-green);
+    background-color: rgba(0, 255, 136, 0.05);
+}
+/* Copyright (c) 2025 Your Name. All rights reserved.*/
+
+/* Progress bars */
+.progress {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Tables */
+.table-dark {
+    --bs-table-bg: transparent;
+}
+
+.table > :not(caption) > * > * {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.table-hover > tbody > tr:hover > * {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Code blocks */
+code {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--cyber-blue);
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+}
+
+pre code {
+    background-color: transparent;
+    padding: 0;
+}
+
+/* Alert enhancements */
+.alert {
+    border: none;
+    border-left: 4px solid;
+}
+
+.alert-danger {
+    border-left-color: var(--bs-danger);
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.alert-warning {
+    border-left-color: var(--bs-warning);
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+.alert-success {
+    border-left-color: var(--bs-success);
+    background-color: rgba(25, 135, 84, 0.1);
+}
+
+.alert-info {
+    border-left-color: var(--bs-info);
+    background-color: rgba(13, 202, 240, 0.1);
+}
+
+/* Loading animations */
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.loading-pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+/* Copyright (c) 2025 Your Name. All rights reserved.*/
+
+/* Spinner enhancements */
+.spinner-border {
+    animation-duration: 0.75s;
+}
+
+/* Status indicators */
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.status-pending {
+    background-color: var(--bs-warning);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.status-completed {
+    background-color: var(--bs-success);
+}
+
+.status-failed {
+    background-color: var(--bs-danger);
+}
+
+.status-analyzing {
+    background-color: var(--cyber-blue);
+    animation: pulse 1s ease-in-out infinite;
+}
+
+/* IOC display */
+.ioc-container {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.ioc-item {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    word-break: break-all;
+}
+
+.ioc-item:last-child {
+    margin-bottom: 0;
+}
+
+/* Malware family tags */
+.malware-family {
+    background: linear-gradient(45deg, var(--cyber-purple), var(--cyber-blue));
+    color: white;
+    border: none;
+}
+
+/* Threat level indicators */
+.threat-level-high {
+    background-color: var(--bs-danger);
+    color: white;
+}
+
+.threat-level-medium {
+    background-color: var(--bs-warning);
+    color: var(--bs-dark);
+}
+/* Copyright (c) 2025 Your Name. All rights reserved.*/
+
+.threat-level-low {
+    background-color: var(--bs-success);
+    color: white;
+}
+
+.threat-level-unknown {
+    background-color: var(--bs-secondary);
+    color: white;
+}
+
+/* Network visualization */
+.network-node {
+    fill: var(--cyber-blue);
+    stroke: var(--bs-light);
+    stroke-width: 2px;
+}
+
+.network-link {
+    stroke: rgba(255, 255, 255, 0.3);
+    stroke-width: 1px;
+}
+
+/* Analysis timeline */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--cyber-blue), var(--cyber-green));
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -1.75rem;
+    top: 0.5rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background-color: var(--cyber-blue);
+    border: 3px solid var(--bs-dark);
+}
+
+.timeline-item.completed::before {
+    background-color: var(--bs-success);
+}
+
+.timeline-item.failed::before {
+    background-color: var(--bs-danger);
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+    }
+    /* Copyright (c) 2025 Your Name. All rights reserved.*/
+/* Copyright (c) 2025 Your Name. All rights reserved.*/
+
+    .btn-group .btn {
+        border-radius: 0.375rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .btn-group .btn:last-child {
+        margin-bottom: 0;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    .navbar,
+    .btn,
+    footer {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #000;
+        box-shadow: none;
+    }
+    
+    .alert {
+        border: 1px solid #000;
+    }
+}
+
+/* Dark mode specific adjustments */
+[data-bs-theme="dark"] {
+    .table > :not(caption) > * > * {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .accordion-button {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: var(--bs-light);
+    }
+    
+    .accordion-button:not(.collapsed) {
+        background-color: rgba(0, 212, 255, 0.1);
+        color: var(--cyber-blue);
+    }
+    
+    .accordion-body {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+    
+    .modal-content {
+        background-color: var(--bs-gray-800);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .modal-header {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .modal-footer {
+        border-top-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Cybersecurity themed gradients */
+.cyber-gradient-1 {
+    background: linear-gradient(135deg, var(--cyber-blue), var(--cyber-purple));
+}
+
+.cyber-gradient-2 {
+    background: linear-gradient(135deg, var(--cyber-green), var(--cyber-blue));
+}
+
+.cyber-gradient-3 {
+    background: linear-gradient(135deg, var(--cyber-orange), var(--bs-danger));
+}
+
+/* Glow effects for important elements */
+.glow-blue {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.glow-green {
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.glow-red {
+    box-shadow: 0 0 20px rgba(220, 53, 69, 0.3);
+}
+/* Copyright (c) 2025 Your Name. All rights reserved.*/
+
+/* Text selection */
+::selection {
+    background-color: rgba(0, 212, 255, 0.3);
+    color: white;
+}
+
+/* Scrollbar styling for webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+/* Copyright (c) 2025 Your Name. All rights reserved.*/

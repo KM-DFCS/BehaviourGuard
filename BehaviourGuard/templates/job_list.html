@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Jobs - BehaviorGuard {% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2">
+                <i data-feather="list" class="me-2"></i>
+                Analysis Jobs
+            </h1>
+            <a href="{{ url_for('upload.upload_file') }}" class="btn btn-primary">
+                <i data-feather="upload" class="me-2"></i>
+                Upload New File
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Status Filter</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="all" {{ 'selected' if request.args.get('status') == 'all' else '' }}>All Statuses</option>
+                            <option value="pending" {{ 'selected' if request.args.get('status') == 'pending' else '' }}>Pending</option>
+                            <option value="analyzing" {{ 'selected' if request.args.get('status') == 'analyzing' else '' }}>Analyzing</option>
+                            <option value="completed" {{ 'selected' if request.args.get('status') == 'completed' else '' }}>Completed</option>
+                            <option value="failed" {{ 'selected' if request.args.get('status') == 'failed' else '' }}>Failed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8 d-flex align-items-end">
+                        <button type="submit" class="btn btn-outline-primary me-2">
+                            <i data-feather="filter" class="me-2"></i>
+                            Apply Filter
+                        </button>
+                        <a href="{{ url_for('analysis.list_jobs') }}" class="btn btn-outline-secondary">
+                            <i data-feather="x" class="me-2"></i>
+                            Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Jobs Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    Analysis Jobs ({{ jobs.total }} total)
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if jobs.items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Filename</th>
+                                    <th>File Hash</th>
+                                    <th>Size</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in jobs.items %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('analysis.view_job', job_id=job.id) }}" class="text-decoration-none">
+                                                #{{ job.id }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i data-feather="file" class="me-2 text-muted" width="16" height="16"></i>
+                                                <span class="text-truncate" style="max-width: 200px;" title="{{ job.filename }}">
+                                                    {{ job.filename }}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <code class="small text-muted">{{ job.file_hash[:16] }}...</code>
+                                        </td>
+                                        <td class="text-muted small">
+                                            {{ "{:,}".format(job.file_size) }} bytes
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if job.status.value == 'completed' else 'warning' if job.status.value in ['pending', 'uploading', 'analyzing', 'generating_report'] else 'danger' if job.status.value == 'failed' else 'info' }}">
+                                                {{ job.status.value.replace('_', ' ').title() }}
+                                            </span>
+                                        </td>
+                                        <td class="text-muted small">
+                                            {{ job.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('analysis.view_job', job_id=job.id) }}" 
+                                                   class="btn btn-outline-primary" title="View Details">
+                                                    <i data-feather="eye" width="14" height="14"></i>
+                                                </a>
+                                                {% if job.report_path %}
+                                                    <a href="{{ url_for('analysis.download_report', job_id=job.id) }}" 
+                                                       class="btn btn-outline-success" title="Download Report">
+                                                        <i data-feather="download" width="14" height="14"></i>
+                                                    </a>
+                                                {% endif %}
+                                                <button type="button" class="btn btn-outline-danger" 
+                                                        onclick="confirmDelete({{ job.id }}, '{{ job.filename }}')" title="Delete Job">
+                                                    <i data-feather="trash-2" width="14" height="14"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if jobs.pages > 1 %}
+                        <nav aria-label="Jobs pagination" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if jobs.has_prev %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('analysis.list_jobs', page=jobs.prev_num, status=request.args.get('status', '')) }}">
+                                            <i data-feather="chevron-left" width="14" height="14"></i>
+                                            Previous
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for page_num in jobs.iter_pages() %}
+                                    {% if page_num %}
+                                        {% if page_num != jobs.page %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ url_for('analysis.list_jobs', page=page_num, status=request.args.get('status', '')) }}">
+                                                    {{ page_num }}
+                                                </a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ page_num }}</span>
+                                            </li>
+                                        {% endif %}
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if jobs.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('analysis.list_jobs', page=jobs.next_num, status=request.args.get('status', '')) }}">
+                                            Next
+                                            <i data-feather="chevron-right" width="14" height="14"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i data-feather="inbox" class="text-muted mb-3" width="48" height="48"></i>
+                        <h6 class="text-muted">No analysis jobs found</h6>
+                        <p class="text-muted">Upload a file to start your first malware analysis</p>
+                        <a href="{{ url_for('upload.upload_file') }}" class="btn btn-primary">
+                            <i data-feather="upload" class="me-2"></i>
+                            Upload File
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this analysis job? This action cannot be undone.</p>
+                <p><strong>File:</strong> <span id="delete-filename"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" id="delete-form" class="d-inline">
+                    <button type="submit" class="btn btn-danger">Delete Job</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function confirmDelete(jobId, filename) {
+    document.getElementById('delete-filename').textContent = filename;
+    document.getElementById('delete-form').action = `/analysis/job/${jobId}/delete`;
+    
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+
+// Auto-refresh status for pending jobs
+setInterval(function() {
+    const pendingRows = document.querySelectorAll('tbody tr .badge.bg-warning');
+    pendingRows.forEach(function(badge) {
+        const row = badge.closest('tr');
+        const jobId = row.querySelector('a[href*="/analysis/job/"]').textContent.replace('#', '');
+        
+        fetch(`/analysis/api/job/${jobId}/status`)
+            .then(response => response.json())
+            .then(data => {
+                badge.textContent = data.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                badge.className = 'badge bg-' + 
+                    (data.status === 'completed' ? 'success' : 
+                     data.status === 'failed' ? 'danger' : 
+                     ['pending', 'uploading', 'analyzing', 'generating_report'].includes(data.status) ? 'warning' : 'info');
+                
+                // Add download button if report is available
+                if (data.report_available && !row.querySelector('.btn-outline-success')) {
+                    const actionsDiv = row.querySelector('.btn-group');
+                    const downloadBtn = document.createElement('a');
+                    downloadBtn.href = `/analysis/job/${jobId}/report`;
+                    downloadBtn.className = 'btn btn-outline-success';
+                    downloadBtn.title = 'Download Report';
+                    downloadBtn.innerHTML = '<i data-feather="download" width="14" height="14"></i>';
+                    actionsDiv.insertBefore(downloadBtn, actionsDiv.lastElementChild);
+                    feather.replace();
+                }
+            })
+            .catch(error => console.log('Error refreshing status:', error));
+    });
+}, 15000); // Check every 15 seconds
+</script>
+{% endblock %}

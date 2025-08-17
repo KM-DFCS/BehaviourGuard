@@ -1,0 +1,471 @@
+{% extends "base.html" %}
+
+{% block title %}Activity Logs Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-list-alt text-primary"></i>
+                Activity Logs Dashboard
+            </h1>
+            <p class="text-muted">Monitor all system activities and analysis events</p>
+        </div>
+    </div>
+
+    <!-- Activity Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="total-jobs">0</h4>
+                            <p class="card-text">Total Jobs</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-tasks fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="completed-jobs">0</h4>
+                            <p class="card-text">Completed</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="active-jobs">0</h4>
+                            <p class="card-text">Active</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-spinner fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="failed-jobs">0</h4>
+                            <p class="card-text">Failed</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Logs Table -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-history"></i> Recent Activity Logs</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshLogs()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="exportLogs()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="activity-table">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Job ID</th>
+                                    <th>Activity</th>
+                                    <th>Status</th>
+                                    <th>Details</th>
+                                    <th>Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activity-tbody">
+                                <tr>
+                                    <td colspan="6" class="text-center">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading activity logs...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Events -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-exclamation-triangle text-warning"></i> System Events</h5>
+                </div>
+                <div class="card-body">
+                    <div id="system-events" style="height: 300px; overflow-y: auto;">
+                        <div class="text-center">
+                            <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                            <p class="mt-2">Loading system events...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line text-info"></i> Activity Timeline</h5>
+                </div>
+                <div class="card-body">
+                    <div id="activity-timeline" style="height: 300px; overflow-y: auto;">
+                        <div class="text-center">
+                            <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                            <p class="mt-2">Loading activity timeline...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Analysis Jobs -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-file-alt"></i> Recent Analysis Jobs</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Job ID</th>
+                                    <th>Filename</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Updated</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-jobs-tbody">
+                                <tr>
+                                    <td colspan="6" class="text-center">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading recent jobs...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Activity Log Modal -->
+<div class="modal fade" id="activityModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Activity Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="activity-modal-body">
+                <!-- Activity details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let activityLogs = [];
+let refreshInterval;
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    loadActivityLogs();
+    loadSystemEvents();
+    loadRecentJobs();
+    updateSummaryStats();
+    
+    // Auto-refresh every 30 seconds
+    refreshInterval = setInterval(function() {
+        loadActivityLogs();
+        updateSummaryStats();
+    }, 30000);
+});
+
+function loadActivityLogs() {
+    fetch('/analysis/api/activity-logs')
+        .then(response => response.json())
+        .then(data => {
+            activityLogs = data.logs || [];
+            displayActivityLogs(activityLogs);
+        })
+        .catch(error => {
+            console.error('Error loading activity logs:', error);
+            document.getElementById('activity-tbody').innerHTML = 
+                '<tr><td colspan="6" class="text-center text-danger">Error loading activity logs</td></tr>';
+        });
+}
+
+function displayActivityLogs(logs) {
+    const tbody = document.getElementById('activity-tbody');
+    
+    if (logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No activity logs found</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = logs.map(log => `
+        <tr class="activity-row" data-log-id="${log.id}">
+            <td>${formatTimestamp(log.timestamp)}</td>
+            <td>${log.job_id ? '#' + log.job_id : '-'}</td>
+            <td>${log.activity}</td>
+            <td><span class="badge bg-${getStatusColor(log.status)}">${log.status}</span></td>
+            <td>${truncateText(log.details, 50)}</td>
+            <td>${log.duration || '-'}</td>
+        </tr>
+    `).join('');
+    
+    // Add click handlers for activity details
+    document.querySelectorAll('.activity-row').forEach(row => {
+        row.addEventListener('click', function() {
+            const logId = this.dataset.logId;
+            showActivityDetails(logId);
+        });
+    });
+}
+
+function loadSystemEvents() {
+    fetch('/analysis/api/system-events')
+        .then(response => response.json())
+        .then(data => {
+            const eventsDiv = document.getElementById('system-events');
+            const events = data.events || [];
+            
+            if (events.length === 0) {
+                eventsDiv.innerHTML = '<p class="text-muted text-center">No system events</p>';
+                return;
+            }
+            
+            eventsDiv.innerHTML = events.map(event => `
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <small class="text-muted">${formatTimestamp(event.timestamp)}</small>
+                        <div class="fw-bold">${event.type}</div>
+                        <small>${event.message}</small>
+                    </div>
+                    <span class="badge bg-${getEventColor(event.level)}">${event.level}</span>
+                </div>
+            `).join('');
+        })
+        .catch(error => {
+            console.error('Error loading system events:', error);
+            document.getElementById('system-events').innerHTML = 
+                '<p class="text-danger text-center">Error loading system events</p>';
+        });
+}
+
+function loadRecentJobs() {
+    fetch('/analysis/api/recent-jobs')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('recent-jobs-tbody');
+            const jobs = data.jobs || [];
+            
+            if (jobs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No recent jobs</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = jobs.map(job => `
+                <tr>
+                    <td>#${job.id}</td>
+                    <td>${truncateText(job.filename, 30)}</td>
+                    <td><span class="badge bg-${getStatusColor(job.status)}">${job.status}</span></td>
+                    <td>${formatTimestamp(job.created_at)}</td>
+                    <td>${formatTimestamp(job.updated_at)}</td>
+                    <td>
+                        <a href="/analysis/job/${job.id}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                    </td>
+                </tr>
+            `).join('');
+        })
+        .catch(error => {
+            console.error('Error loading recent jobs:', error);
+            document.getElementById('recent-jobs-tbody').innerHTML = 
+                '<tr><td colspan="6" class="text-center text-danger">Error loading recent jobs</td></tr>';
+        });
+}
+
+function updateSummaryStats() {
+    fetch('/analysis/api/activity-stats')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('total-jobs').textContent = data.total_jobs || 0;
+            document.getElementById('completed-jobs').textContent = data.completed_jobs || 0;
+            document.getElementById('active-jobs').textContent = data.active_jobs || 0;
+            document.getElementById('failed-jobs').textContent = data.failed_jobs || 0;
+        })
+        .catch(error => {
+            console.error('Error loading summary stats:', error);
+        });
+}
+
+function showActivityDetails(logId) {
+    const log = activityLogs.find(l => l.id == logId);
+    if (!log) return;
+    
+    const modalBody = document.getElementById('activity-modal-body');
+    modalBody.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <strong>Timestamp:</strong><br>
+                ${formatTimestamp(log.timestamp)}
+            </div>
+            <div class="col-md-6">
+                <strong>Job ID:</strong><br>
+                ${log.job_id ? '#' + log.job_id : 'N/A'}
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-md-6">
+                <strong>Activity:</strong><br>
+                ${log.activity}
+            </div>
+            <div class="col-md-6">
+                <strong>Status:</strong><br>
+                <span class="badge bg-${getStatusColor(log.status)}">${log.status}</span>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-12">
+                <strong>Details:</strong><br>
+                <pre class="bg-light p-2 rounded">${log.details || 'No details available'}</pre>
+            </div>
+        </div>
+        ${log.duration ? `
+        <hr>
+        <div class="row">
+            <div class="col-12">
+                <strong>Duration:</strong> ${log.duration}
+            </div>
+        </div>
+        ` : ''}
+    `;
+    
+    new bootstrap.Modal(document.getElementById('activityModal')).show();
+}
+
+function refreshLogs() {
+    loadActivityLogs();
+    loadSystemEvents();
+    loadRecentJobs();
+    updateSummaryStats();
+}
+
+function exportLogs() {
+    const csvContent = generateCSV(activityLogs);
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `activity_logs_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+function generateCSV(logs) {
+    const headers = ['Timestamp', 'Job ID', 'Activity', 'Status', 'Details', 'Duration'];
+    const rows = logs.map(log => [
+        log.timestamp,
+        log.job_id || '',
+        log.activity,
+        log.status,
+        log.details || '',
+        log.duration || ''
+    ]);
+    
+    return [headers, ...rows].map(row => 
+        row.map(cell => `"${cell}"`).join(',')
+    ).join('\n');
+}
+
+function formatTimestamp(timestamp) {
+    if (!timestamp) return '-';
+    const date = new Date(timestamp);
+    return date.toLocaleString();
+}
+
+function truncateText(text, maxLength) {
+    if (!text) return '-';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
+
+function getStatusColor(status) {
+    switch (status.toLowerCase()) {
+        case 'completed': return 'success';
+        case 'analyzing': return 'warning';
+        case 'pending': return 'info';
+        case 'failed': return 'danger';
+        case 'error': return 'danger';
+        default: return 'secondary';
+    }
+}
+
+function getEventColor(level) {
+    switch (level.toLowerCase()) {
+        case 'error': return 'danger';
+        case 'warning': return 'warning';
+        case 'info': return 'info';
+        case 'success': return 'success';
+        default: return 'secondary';
+    }
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+});
+</script>
+{% endblock %}

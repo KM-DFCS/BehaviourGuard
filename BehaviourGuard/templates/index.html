@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - BehaviorGuard {% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2">
+                <i data-feather="shield" class="me-2"></i>
+                Analysis Dashboard
+            </h1>
+            <a href="{{ url_for('upload.upload_file') }}" class="btn btn-primary">
+                <i data-feather="upload" class="me-2"></i>
+                Upload New File
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title text-white">Total Jobs</h6>
+                        <h3 class="text-white" id="total-jobs">{{ stats.total if stats else 0 }}</h3>
+                    </div>
+                    <div>
+                        <i data-feather="activity" class="text-white" width="32" height="32"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title text-white">Completed</h6>
+                        <h3 class="text-white" id="completed-jobs">{{ stats.completed if stats else 0 }}</h3>
+                    </div>
+                    <div>
+                        <i data-feather="check-circle" class="text-white" width="32" height="32"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title text-dark">Pending</h6>
+                        <h3 class="text-dark" id="pending-jobs">{{ stats.pending if stats else 0 }}</h3>
+                    </div>
+                    <div>
+                        <i data-feather="clock" class="text-dark" width="32" height="32"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title text-white">Failed</h6>
+                        <h3 class="text-white" id="failed-jobs">{{ stats.failed if stats else 0 }}</h3>
+                    </div>
+                    <div>
+                        <i data-feather="x-circle" class="text-white" width="32" height="32"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Analysis Jobs -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i data-feather="clock" class="me-2"></i>
+                    Recent Analysis Jobs
+                </h5>
+                <a href="{{ url_for('analysis.list_jobs') }}" class="btn btn-outline-secondary btn-sm">
+                    View All
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_jobs %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Filename</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in recent_jobs %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('analysis.view_job', job_id=job.id) }}" class="text-decoration-none">
+                                                #{{ job.id }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i data-feather="file" class="me-2 text-muted" width="16" height="16"></i>
+                                                <span class="text-truncate" style="max-width: 200px;">{{ job.filename }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if job.status.value == 'completed' else 'warning' if job.status.value == 'pending' else 'danger' if job.status.value == 'failed' else 'info' }}">
+                                                {{ job.status.value.title() }}
+                                            </span>
+                                        </td>
+                                        <td class="text-muted small">
+                                            {{ job.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('analysis.view_job', job_id=job.id) }}" 
+                                                   class="btn btn-outline-primary" title="View Details">
+                                                    <i data-feather="eye" width="14" height="14"></i>
+                                                </a>
+                                                {% if job.report_path %}
+                                                    <a href="{{ url_for('analysis.download_report', job_id=job.id) }}" 
+                                                       class="btn btn-outline-success" title="Download Report">
+                                                        <i data-feather="download" width="14" height="14"></i>
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i data-feather="inbox" class="text-muted mb-3" width="48" height="48"></i>
+                        <h6 class="text-muted">No analysis jobs yet</h6>
+                        <p class="text-muted small">Upload a file to start your first malware analysis</p>
+                        <a href="{{ url_for('upload.upload_file') }}" class="btn btn-primary">
+                            <i data-feather="upload" class="me-2"></i>
+                            Upload File
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Getting Started Card -->
+{% if not recent_jobs %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i data-feather="info" class="me-2"></i>
+                    Getting Started
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center mb-3">
+                            <i data-feather="upload" class="text-primary mb-2" width="32" height="32"></i>
+                            <h6>1. Upload File</h6>
+                            <p class="text-muted small">Upload suspicious files for behavioral analysis</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center mb-3">
+                            <i data-feather="activity" class="text-info mb-2" width="32" height="32"></i>
+                            <h6>2. Automated Analysis</h6>
+                            <p class="text-muted small">System performs sandbox, network, and process analysis</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center mb-3">
+                            <i data-feather="file-text" class="text-success mb-2" width="32" height="32"></i>
+                            <h6>3. Get Report</h6>
+                            <p class="text-muted small">Download comprehensive PDF reports with IOCs and YARA rules</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Auto-refresh stats every 30 seconds
+    setInterval(function() {
+        fetch('/analysis/api/stats')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('total-jobs').textContent = data.total_jobs;
+                document.getElementById('completed-jobs').textContent = data.completed_jobs;
+                document.getElementById('pending-jobs').textContent = data.pending_jobs;
+                document.getElementById('failed-jobs').textContent = data.failed_jobs;
+            })
+            .catch(error => console.log('Error refreshing stats:', error));
+    }, 30000);
+</script>
+{% endblock %}

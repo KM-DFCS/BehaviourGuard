@@ -1,0 +1,26 @@
+[]
+name = "Komal Mazhar Mushtaq"
+version = "0.1.0"
+description = "BehaviourGuard- Behaviour based Malware Classification System"
+Author = [
+    {name= "Komal Mazhar Mushtaq" Email= "kmmshub@gmail.com"}
+]
+lICENSE= "Copyright (c) 2025 Komal Mazhar Mushtaq. All rights reserved."
+requires-python = ">=3.11"
+dependencies = [
+    "celery>=5.5.3",
+    "email-validator>=2.2.0",
+    "flask>=3.1.1",
+    "flask-sqlalchemy>=3.1.1",
+    "gunicorn>=23.0.0",
+    "matplotlib>=3.10.5",
+    "psycopg2-binary>=2.9.10",
+    "python-magic>=0.4.27",
+    "redis>=6.4.0",
+    "reportlab>=4.4.3",
+    "requests>=2.32.4",
+    "sqlalchemy>=2.0.43",
+    "werkzeug>=3.1.3",
+    "wkhtmltopdf>=0.2",
+    "yara-python>=4.5.4",
+]
